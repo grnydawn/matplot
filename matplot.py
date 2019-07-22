@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import os
 import pyloco
 import numpy
 import matplotlib
@@ -395,3 +396,42 @@ Examples
         pyplot.close(self.figure)
 
         #self.add_forward(data=data)
+
+class MatPlotTest(pyloco.TestCase):
+
+    def __init__(self, *vargs, **kwargs):
+
+        super(MatPlotTest, self).__init__(*vargs, **kwargs)
+
+        self.imgfile = "testimg.png"
+
+        self.argv = [
+            "--debug",
+            "--noshow",
+            "--save", "'%s'" % self.imgfile
+        ]
+
+    def setUp(self):
+
+        if os.path.exists(self.imgfile):
+            os.remove(self.imgfile)
+
+    def tearDown(self):
+
+        if os.path.exists(self.imgfile):
+            os.remove(self.imgfile)
+
+    def _default_assert(self, retval):
+
+        self.assertEqual(retval, 0)
+        self.assertTrue(os.path.exists(self.imgfile))
+
+    def test_figure(self):
+
+        argv = self.argv + [
+            "--figure", "'test'@suptitle",
+        ]
+
+        retval, forward = self.perform_test(MatPlot, argv=argv)
+
+        self._default_assert(retval)
