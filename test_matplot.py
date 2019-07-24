@@ -4,18 +4,16 @@
 from __future__ import unicode_literals
 
 import os
-import unittest
-
 import pyloco
 
 here, myname = os.path.split(__file__)
 datadir = os.path.join(here, "data")
 rootdir = os.path.realpath(os.path.join(here, ".."))
 #matplot = os.path.join(rootdir, "nctools", "plot", "matplot", "matplot.py")
-matplot = "matplot"
+matplot = "matplot.py"
 imgfile = os.path.join(datadir, "img.png")
 
-class TaskMatplotTests(unittest.TestCase):
+class TaskMatplotTests(pyloco.TestCase):
 
     def __init__(self, *vargs, **kwargs):
 
@@ -24,6 +22,7 @@ class TaskMatplotTests(unittest.TestCase):
         self.argv = [
             "--debug",
             "--noshow",
+            "--backend", "WebAgg",
             "--save", "'%s'" % imgfile
         ]
 
@@ -49,7 +48,7 @@ class TaskMatplotTests(unittest.TestCase):
             "--figure", "'test'@suptitle",
         ]
 
-        retval, forward = pyloco.perform(matplot, argv)
+        retval, forward = self.perform_test(matplot, argv=argv)
 
         self._default_assert(retval)
 
@@ -60,7 +59,7 @@ class TaskMatplotTests(unittest.TestCase):
             "--plot", "[3,1,2]",
         ]
 
-        retval, forward = pyloco.perform(matplot, argv)
+        retval, forward = self.perform_test(matplot, argv=argv)
 
         #import pdb; pdb.set_trace()
         self._default_assert(retval)
@@ -72,7 +71,7 @@ class TaskMatplotTests(unittest.TestCase):
             "--plot", "[0,1,2], [3,1,2]@bar",
         ]
 
-        retval, forward = pyloco.perform(matplot, argv)
+        retval, forward = self.perform_test(matplot, argv=argv)
 
         #import pdb; pdb.set_trace()
         self._default_assert(retval)
@@ -86,7 +85,7 @@ class TaskMatplotTests(unittest.TestCase):
             "--xaxis", "['A', 'B', 'C']@ticklabels",
         ]
 
-        retval, forward = pyloco.perform(matplot, argv)
+        retval, forward = self.perform_test(matplot, argv=argv)
 
         #import pdb; pdb.set_trace()
         self._default_assert(retval)
@@ -107,7 +106,7 @@ class TaskMatplotTests(unittest.TestCase):
             "--save", "'%d.png'%_pathid_",
         ]
 
-        retval, forward = pyloco.perform("", argv, subargv)
+        retval, forward = self.perform_test("", argv=argv, subargv=subargv)
 
         self.assertEqual(retval, 0)
         self.assertTrue(os.path.exists("0.png"))
@@ -124,7 +123,7 @@ class TaskMatplotTests(unittest.TestCase):
             "-l",
         ]
 
-        retval, forward = pyloco.perform(matplot, argv)
+        retval, forward = self.perform_test(matplot, argv=argv)
 
         #import pdb; pdb.set_trace()
         self._default_assert(retval)
@@ -140,7 +139,7 @@ class TaskMatplotTests(unittest.TestCase):
             "--plot", "_{data[0]['dims']['lat']['variable']['data'][:]:arg}_@plot",
         ]
 
-        retval, forward = pyloco.perform(matplot, argv)
+        retval, forward = self.perform_test(matplot, argv=argv)
 
         self._default_assert(retval)
 

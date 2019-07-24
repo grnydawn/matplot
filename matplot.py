@@ -1,10 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import os
 import pyloco
-import numpy
-import matplotlib
-import matplotlib.pyplot as pyplot
 
 
 class Plotter(object):
@@ -34,13 +30,15 @@ Examples
 ---------
 """
     _name_ = "matplot"
-    _version_ = "0.1.0"
+    _version_ = "0.1.2"
 
     def __init__(self, parent):
 
-        self.set_data_argument("data", required=False, nargs="*",
+        self.add_data_argument("data", required=False, nargs="*",
                 evaluate=True, help="(E) data input")
 
+
+        self.add_option_argument('--backend', help='set a GUI backend')
         self.add_option_argument('-f', metavar='figure creation',
                 param_parse=True,
                 help='(E,P) define a figure for plotting.')
@@ -86,6 +84,9 @@ Examples
         self.add_option_argument('--axes', metavar='axes',
                 action='append', param_parse=True,
                 help='(E,P) define Axes function.')
+        self.add_option_argument('--pyplot', metavar='pyplot',
+                action='append', param_parse=True,
+                help='(E,P) define Pyplot function.')
         self.add_option_argument('--noshow', action='store_true',
                 param_parse=True,
                 help='prevent showing plot on screen.')
@@ -94,14 +95,13 @@ Examples
                 help='prevent generating plot.')
 
         #self.register_forward("data", help="Netcdf data in Python dictionary")
-        self._env["np"] = numpy
-        self._env["mpl"] = matplotlib
-        self._env["plt"] = pyplot
 
         self.figure = None
         self.axes = {}
         self.axes3d = None
-        self.plots = []
+        self.plots = {}
+        self._env["_plots_"] = self.plots
+        self._env["_axes_"] = self.axes
 
     def pre_perform(self, targs):
 
@@ -125,6 +125,13 @@ Examples
             opt.kwargs[k] = eval(v, self._env) 
 
     def perform(self, targs):
+
+        import matplotlib
+        import matplotlib.pyplot as pyplot
+
+        if targs.backend:
+            matplotlib.use(targs.backend, warn=False, force=True)
+            import matplotlib.pyplot as pyplot
 
         if targs.plot:
             opts = targs.plot
@@ -172,20 +179,23 @@ Examples
             for subplot_arg in targs.subplot:
                 self._eval(subplot_arg)
 
-                if len(subplot_arg.context) == 1:
+                if len(subplot_arg.context) > 0:
                     subpname = subplot_arg.context[0]
-                    vargs = subplot_arg.vargs
-                    kwargs = subplot_arg.kwargs
+                else: 
+                    subpname = "ax"
 
-                    if 'projection' in kwargs and kwargs['projection'] == '3d':
-                         from mpl_toolkits.mplot3d import Axes3D
-                         self.axes3d = Axes3D
-                    if vargs:
-                        self.axes[subpname] = self.figure.add_subplot(*vargs, **kwargs)
-                    else:
-                        self.axes[subpname] = self.figure.add_subplot(111, **kwargs)
+                vargs = subplot_arg.vargs
+                kwargs = subplot_arg.kwargs
+
+                if 'projection' in kwargs and kwargs['projection'] == '3d':
+                     from mpl_toolkits.mplot3d import Axes3D
+                     self.axes3d = Axes3D
+                if vargs:
+                    self.axes[subpname] = self.figure.add_subplot(*vargs, **kwargs)
                 else:
-                    UsageError("The synaxt error near '@': %s"%str(subplot_arg))
+                    self.axes[subpname] = self.figure.add_subplot(111, **kwargs)
+                #else:
+                #Exception("The synaxt error near '@': %s"%str(subplot_arg))
 
         if not self.axes:
             self.axes["ax"] = self.figure.add_subplot(111)
@@ -201,7 +211,7 @@ Examples
                     funcname = fig_arg.context[0]
 
                 else:
-                    UsageError("The synaxt error near '@': %s" % str(fig_arg))
+                    Exception("The synaxt error near '@': %s" % str(fig_arg))
 
                 getattr(self.figure, funcname)(*vargs, **kwargs)
 
@@ -217,16 +227,19 @@ Examples
 
                 funcname = plot_arg.context[0] if nctx > 0 else "plot"
                 axname = plot_arg.context[1] if nctx > 1 else "ax"
+                plotname = plot_arg.context[2] if nctx > 2 else None
+
                 ax = self.axes[axname]
 
                 if hasattr(ax, funcname):
                     plot_handle = getattr(ax, funcname)(*vargs, **kwargs)
 
-                    try:
-                        for p in plot_handle:
-                            self.plots.append(p)
-                    except TypeError:
-                        self.plots.append(plot_handle)
+                    if plotname:
+                        try:
+                            for idx, p in enumerate(plot_handle):
+                                self.plots["%s-%d" % (plotname, idx)] = p
+                        except TypeError:
+                            self.plots[plotname] = plot_handle
                 else:
                     # TODO: handling this case
                     pass
@@ -245,7 +258,7 @@ Examples
             elif len(targs.title.context) == 1:
                 self.axes[targs.title.context[0]].set_title(*vargs, **kwargs)
             else:
-                UsageError("The synaxt error near '@': %s" % str(targs.title))
+                Exception("The synaxt error near '@': %s" % str(targs.title))
 
         # x-axis setting
         if targs.xaxis:
@@ -262,7 +275,7 @@ Examples
                     ax = self.axes[xaxis_arg.context[1]]
 
                 else:
-                    UsageError("Following option needs one or two items at the left of @: %s" % str(xaxis_arg))
+                    Exception("Following option needs one or two items at the left of @: %s" % str(xaxis_arg))
 
                 getattr(ax, funcname)(*vargs, **kwargs)
 
@@ -281,7 +294,7 @@ Examples
                     ax = self.axes[yaxis_arg.context[1]]
 
                 else:
-                    UsageError("Following option needs one or two items at the left of @: %s" % str(yaxis_arg))
+                    Exception("Following option needs one or two items at the left of @: %s" % str(yaxis_arg))
 
                 getattr(ax, funcname)(*vargs, **kwargs)
 
@@ -300,7 +313,7 @@ Examples
                     ax = self.axes[zaxis_arg.context[1]]
 
                 else:
-                    UsageError("Following option needs one or two items at the left of @: %s" % str(zaxis_arg))
+                    Exception("Following option needs one or two items at the left of @: %s" % str(zaxis_arg))
 
                 getattr(ax, funcname)(*vargs, **kwargs)
 
@@ -322,7 +335,7 @@ Examples
                     ax = self.axes[grid_arg.context[0]]
 
                 else:
-                    UsageError("Following option needs one or two items at the left of @: %s" % str(grid_arg))
+                    Exception("Following option needs one or two items at the left of @: %s" % str(grid_arg))
 
                 ax.grid(*vargs, **kwargs)
 
@@ -344,7 +357,7 @@ Examples
                     ax = self.axes[legend_arg.context[0]]
 
                 else:
-                    UsageError("Following option needs one or two items at the left of @: %s" % str(legend_arg))
+                    Exception("Following option needs one or two items at the left of @: %s" % str(legend_arg))
 
                 ax.legend(*vargs, **kwargs)
 
@@ -363,7 +376,7 @@ Examples
                     ax = self.axes[axes_arg.context[1]]
 
                 else:
-                    UsageError("Following option needs one or two items at the left of @: %s" % str(axes_arg))
+                    Exception("Following option needs one or two items at the left of @: %s" % str(axes_arg))
 
                 getattr(ax, funcname)(*vargs, **kwargs)
 
@@ -374,7 +387,17 @@ Examples
                 for d in targs.data:
                     self.axes["ax"].plot(d)
             else:
-                raise UsageError("There is no data to plot.")
+                raise Exception("There is no data to plot.")
+
+        # execute pyplot functions
+        if targs.pyplot:
+            for pyplot_arg in targs.pyplot:
+                self._eval(pyplot_arg)
+                vargs = pyplot_arg.vargs
+                kwargs = pyplot_arg.kwargs
+                funcname = pyplot_arg.context[0]
+
+                getattr(pyplot, funcname)(*vargs, **kwargs)
 
         # saving an image file
         if targs.save:
@@ -396,42 +419,3 @@ Examples
         pyplot.close(self.figure)
 
         #self.add_forward(data=data)
-
-class MatPlotTest(pyloco.TestCase):
-
-    def __init__(self, *vargs, **kwargs):
-
-        super(MatPlotTest, self).__init__(*vargs, **kwargs)
-
-        self.imgfile = "testimg.png"
-
-        self.argv = [
-            "--debug",
-            "--noshow",
-            "--save", "'%s'" % self.imgfile
-        ]
-
-    def setUp(self):
-
-        if os.path.exists(self.imgfile):
-            os.remove(self.imgfile)
-
-    def tearDown(self):
-
-        if os.path.exists(self.imgfile):
-            os.remove(self.imgfile)
-
-    def _default_assert(self, retval):
-
-        self.assertEqual(retval, 0)
-        self.assertTrue(os.path.exists(self.imgfile))
-
-    def test_figure(self):
-
-        argv = self.argv + [
-            "--figure", "'test'@suptitle",
-        ]
-
-        retval, forward = self.perform_test(MatPlot, argv=argv)
-
-        self._default_assert(retval)
