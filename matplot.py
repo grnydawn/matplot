@@ -30,7 +30,7 @@ Examples
 ---------
 """
     _name_ = "matplot"
-    _version_ = "0.1.2"
+    _version_ = "0.1.3"
 
     def __init__(self, parent):
 
@@ -227,19 +227,18 @@ Examples
 
                 funcname = plot_arg.context[0] if nctx > 0 else "plot"
                 axname = plot_arg.context[1] if nctx > 1 else "ax"
-                plotname = plot_arg.context[2] if nctx > 2 else None
+                plotname = plot_arg.context[2] if nctx > 2 else "_plot%d" % len(self.plots)
 
                 ax = self.axes[axname]
 
                 if hasattr(ax, funcname):
                     plot_handle = getattr(ax, funcname)(*vargs, **kwargs)
 
-                    if plotname:
-                        try:
-                            for idx, p in enumerate(plot_handle):
-                                self.plots["%s-%d" % (plotname, idx)] = p
-                        except TypeError:
-                            self.plots[plotname] = plot_handle
+                    try:
+                        for idx, p in enumerate(plot_handle):
+                            self.plots["%s-%d" % (plotname, idx)] = p
+                    except TypeError:
+                        self.plots[plotname] = plot_handle
                 else:
                     # TODO: handling this case
                     pass
