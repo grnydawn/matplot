@@ -30,7 +30,7 @@ Examples
 ---------
 """
     _name_ = "matplot"
-    _version_ = "0.1.3"
+    _version_ = "0.1.4"
 
     def __init__(self, parent):
 
@@ -227,19 +227,18 @@ Examples
 
                 funcname = plot_arg.context[0] if nctx > 0 else "plot"
                 axname = plot_arg.context[1] if nctx > 1 else "ax"
-                plotname = plot_arg.context[2] if nctx > 2 else None
+                plotname = plot_arg.context[2] if nctx > 2 else "_plot%d" % len(self.plots)
 
                 ax = self.axes[axname]
 
                 if hasattr(ax, funcname):
                     plot_handle = getattr(ax, funcname)(*vargs, **kwargs)
 
-                    if plotname:
-                        try:
-                            for idx, p in enumerate(plot_handle):
-                                self.plots["%s-%d" % (plotname, idx)] = p
-                        except TypeError:
-                            self.plots[plotname] = plot_handle
+                    try:
+                        for idx, p in enumerate(plot_handle):
+                            self.plots["%s-%d" % (plotname, idx)] = p
+                    except TypeError:
+                        self.plots[plotname] = plot_handle
                 else:
                     # TODO: handling this case
                     pass
@@ -263,6 +262,9 @@ Examples
         # x-axis setting
         if targs.xaxis:
             for xaxis_arg in targs.xaxis:
+                if len(xaxis_arg.context) == 0:
+                    raise Exception("No x-axis function is provided.")
+
                 self._eval(xaxis_arg)
                 vargs = xaxis_arg.vargs
                 kwargs = xaxis_arg.kwargs
@@ -282,6 +284,9 @@ Examples
        # y-axis setting
         if targs.yaxis:
             for yaxis_arg in targs.yaxis:
+                if len(yaxis_arg.context) == 0:
+                    raise Exception("No y-axis function is provided.")
+
                 self._eval(yaxis_arg)
                 vargs = yaxis_arg.vargs
                 kwargs = yaxis_arg.kwargs
@@ -301,6 +306,9 @@ Examples
         # z-axis setting
         if targs.zaxis:
             for zaxis_arg in targs.zaxis:
+                if len(zaxis_arg.context) == 0:
+                    raise Exception("No z-axis function is provided.")
+
                 self._eval(zaxis_arg)
                 vargs = zaxis_arg.vargs
                 kwargs = zaxis_arg.kwargs
