@@ -30,7 +30,7 @@ Examples
 ---------
 """
     _name_ = "matplot"
-    _version_ = "0.1.2"
+    _version_ = "0.1.3"
 
     def __init__(self, parent):
 
@@ -45,9 +45,9 @@ Examples
         self.add_option_argument('-t', '--title', metavar='title',
                 param_parse=True,
                 help='(E,P) plot title')
-        self.add_option_argument('-c', '--eval', metavar='expr',
-                action='append', param_parse=True, dest="calc",
-                help='(E,P) evaluate an Python expression')
+        #self.add_option_argument('-c', '--eval', metavar='expr',
+        #        action='append', param_parse=True, dest="calc",
+        #        help='(E,P) evaluate an Python expression')
         self.add_option_argument('-p', '--plot', metavar='plot type',
                 action='append', param_parse=True,
                 help='(E,P) plot type for plotting.')
@@ -157,12 +157,12 @@ Examples
                 else:
                     targs.plot.append(opt)
 
-        if targs.calc:
-            for calc_arg in targs.calc:
-                self._eval(calc_arg)
-
-                for lhs, rhs in calc_arg.kwargs.items():
-                    self._env[lhs] = rhs
+#        if targs.calc:
+#            for calc_arg in targs.calc:
+#                self._eval(calc_arg)
+#
+#                for lhs, rhs in calc_arg.kwargs.items():
+#                    self._env[lhs] = rhs
 
         # figure setting
         if targs.f:
