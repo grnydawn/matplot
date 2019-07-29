@@ -30,7 +30,7 @@ Examples
 ---------
 """
     _name_ = "matplot"
-    _version_ = "0.1.4"
+    _version_ = "0.1.5"
 
     def __init__(self, parent):
 
