@@ -147,4 +147,4 @@ class TaskMatplotTests(pyloco.TestCase):
         #self.assertEqual(forward["data"], ['lat', 'lon', 'bnds', 'plev', 'time'])
 
 
-test_classes = (TaskMatplotTests,)
+#test_classes = (TaskMatplotTests,)
