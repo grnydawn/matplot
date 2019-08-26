@@ -7,11 +7,12 @@ import os
 import pyloco
 
 here, myname = os.path.split(__file__)
-datadir = os.path.join(here, "data")
-rootdir = os.path.realpath(os.path.join(here, ".."))
+#datadir = os.path.join(here, "data")
+#rootdir = os.path.realpath(os.path.join(here, ".."))
 #matplot = os.path.join(rootdir, "nctools", "plot", "matplot", "matplot.py")
 matplot = "matplot.py"
-imgfile = os.path.join(datadir, "img.png")
+#imgfile = os.path.join(datadir, "img.png")
+imgfile = "img.png"
 
 class TaskMatplotTests(pyloco.TestCase):
 
@@ -22,9 +23,9 @@ class TaskMatplotTests(pyloco.TestCase):
         self.argv = [
             "--debug",
             "--noshow",
-            "--backend", "WebAgg",
             "--save", "'%s'" % imgfile
         ]
+            #"--backend", "WebAgg",
 
     def setUp(self):
 
@@ -95,7 +96,8 @@ class TaskMatplotTests(pyloco.TestCase):
             #"--multiproc", "2,spawn",
         argv = [
             "--log", "clonetest.log",
-            "--clone", "[[1,2,3],[3,5,2]]"
+            "--multiproc", "2",
+            "--clone", "[1,2,3],[3,5,2]"
         ]
 
         newargv = list(self.argv)
@@ -129,7 +131,7 @@ class TaskMatplotTests(pyloco.TestCase):
         self._default_assert(retval)
 
 
-    def test_pickle(self):
+    def tttest_pickle(self):
 
         picklefile = os.path.join(datadir, "test.ppf")
 
