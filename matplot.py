@@ -30,7 +30,7 @@ Examples
 ---------
 """
     _name_ = "matplot"
-    _version_ = "0.1.6"
+    _version_ = "0.1.7"
 
     def __init__(self, parent):
 
@@ -87,6 +87,9 @@ Examples
         self.add_option_argument('--pyplot', metavar='pyplot',
                 action='append', param_parse=True,
                 help='(E,P) define Pyplot function.')
+        self.add_option_argument('--pyplot-eval', metavar='pyploteval',
+                action='append', param_parse=True,
+                help='(E,P) define expression for Pyplot function output.')
         self.add_option_argument('--noshow', action='store_true',
                 param_parse=True,
                 help='prevent showing plot on screen.')
@@ -99,7 +102,9 @@ Examples
         self.figure = None
         self.axes = {}
         self.axes3d = None
+        self.pyplots = {}
         self.plots = {}
+        self._env["_pyplots_"] = self.pyplots
         self._env["_plots_"] = self.plots
         self._env["_axes_"] = self.axes
 
@@ -199,6 +204,26 @@ Examples
 
         if not self.axes:
             self.axes["ax"] = self.figure.add_subplot(111)
+
+        # execute pyplot functions
+        if targs.pyplot:
+            for pyplot_arg in targs.pyplot:
+                self._eval(pyplot_arg)
+                vargs = pyplot_arg.vargs
+                kwargs = pyplot_arg.kwargs
+                funcname = pyplot_arg.context[0]
+
+                ppout = getattr(pyplot, funcname)(*vargs, **kwargs)
+
+                if len(pyplot_arg.context) > 1:
+                    self.pyplots[pyplot_arg.context[1]] = ppout
+
+        # execute pyplot function evaluations
+        if targs.pyplot_eval:
+            for pyplot_eval in targs.pyplot_eval:
+                self._eval(pyplot_eval)
+                #vargs = pyplot_arg.vargs
+                self._env.update(pyplot_arg.kwargs)
 
         # execute figure functions
         if targs.figure:
@@ -396,16 +421,6 @@ Examples
                     self.axes["ax"].plot(d)
             else:
                 raise Exception("There is no data to plot.")
-
-        # execute pyplot functions
-        if targs.pyplot:
-            for pyplot_arg in targs.pyplot:
-                self._eval(pyplot_arg)
-                vargs = pyplot_arg.vargs
-                kwargs = pyplot_arg.kwargs
-                funcname = pyplot_arg.context[0]
-
-                getattr(pyplot, funcname)(*vargs, **kwargs)
 
         # saving an image file
         if targs.save:

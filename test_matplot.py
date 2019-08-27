@@ -23,9 +23,9 @@ class TaskMatplotTests(pyloco.TestCase):
         self.argv = [
             "--debug",
             "--noshow",
+            "--backend", "WebAgg",
             "--save", "'%s'" % imgfile
         ]
-            #"--backend", "WebAgg",
 
     def setUp(self):
 
