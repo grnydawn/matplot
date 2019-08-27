@@ -30,7 +30,7 @@ Examples
 ---------
 """
     _name_ = "matplot"
-    _version_ = "0.1.8"
+    _version_ = "0.1.9"
 
     def __init__(self, parent):
 
@@ -205,13 +205,6 @@ Examples
         if not self.axes:
             self.axes["ax"] = self.figure.add_subplot(111)
 
-        # execute pyplot function evaluations
-        if targs.pyplot_eval:
-            for pyplot_eval in targs.pyplot_eval:
-                self._eval(pyplot_eval)
-                #vargs = pyplot_arg.vargs
-                self._env.update(pyplot_arg.kwargs)
-
         # execute figure functions
         if targs.figure:
             for fig_arg in targs.figure:
@@ -270,6 +263,13 @@ Examples
 
                 if len(pyplot_arg.context) > 1:
                     self.pyplots[pyplot_arg.context[1]] = ppout
+
+        # execute pyplot function evaluations
+        if targs.pyplot_eval:
+            for pyplot_eval in targs.pyplot_eval:
+                self._eval(pyplot_eval)
+                #vargs = pyplot_arg.vargs
+                self._env.update(pyplot_arg.kwargs)
 
         # title setting
         if targs.title:
