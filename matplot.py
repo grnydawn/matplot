@@ -30,7 +30,7 @@ Examples
 ---------
 """
     _name_ = "matplot"
-    _version_ = "0.1.7"
+    _version_ = "0.1.8"
 
     def __init__(self, parent):
 
@@ -205,19 +205,6 @@ Examples
         if not self.axes:
             self.axes["ax"] = self.figure.add_subplot(111)
 
-        # execute pyplot functions
-        if targs.pyplot:
-            for pyplot_arg in targs.pyplot:
-                self._eval(pyplot_arg)
-                vargs = pyplot_arg.vargs
-                kwargs = pyplot_arg.kwargs
-                funcname = pyplot_arg.context[0]
-
-                ppout = getattr(pyplot, funcname)(*vargs, **kwargs)
-
-                if len(pyplot_arg.context) > 1:
-                    self.pyplots[pyplot_arg.context[1]] = ppout
-
         # execute pyplot function evaluations
         if targs.pyplot_eval:
             for pyplot_eval in targs.pyplot_eval:
@@ -270,6 +257,19 @@ Examples
 
                 if funcname == 'pie':
                     ax.axis('equal')
+
+        # execute pyplot functions
+        if targs.pyplot:
+            for pyplot_arg in targs.pyplot:
+                self._eval(pyplot_arg)
+                vargs = pyplot_arg.vargs
+                kwargs = pyplot_arg.kwargs
+                funcname = pyplot_arg.context[0]
+
+                ppout = getattr(pyplot, funcname)(*vargs, **kwargs)
+
+                if len(pyplot_arg.context) > 1:
+                    self.pyplots[pyplot_arg.context[1]] = ppout
 
         # title setting
         if targs.title:
